@@ -132,7 +132,7 @@ cursor.execute("""
 cursor.execute("""
     CREATE TABLE tb_prescricao(
     id_prescricao INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    id_paciente VARCHAR(45) NOT NULL,
+    id_cliente VARCHAR(45) NOT NULL,
     lente VARCHAR(45) NOT NULL,
     id_longe NUMERIC NOT NULL,
     id_perto NUMERIC NOT NULL,
