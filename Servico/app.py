@@ -44,7 +44,7 @@ cliente_schema = {
         "nome" : {"type" : "string"},
         "apelido" : {"type" : "string"},
         "endereco" : {"type" : "string"},
-        "cpf" : {"type" : "integer"}
+        "cpf" : {"type" : "string"}
     }
 }
 
@@ -56,14 +56,92 @@ medico_schema = {
     }
 }
 
-lente_schema = {
-    "required": ["nome", "material", "valor", "tamanho", "tipo_aro"],
+produto_schema = {
+    "required": ["nome", "material", "valor", "tamanho", "tipo"],
     "properties": {
         "nome" : {"type" : "string"},
         "material" : {"type" : "string"},
-        "valor" : {"type" : "integer"},
+        "valor" : {"type" : "string"},
         "tamanho" : {"type" : "string"},
-        "tipo_aro" : {"type" : "string"}
+        "tipo" : {"type" : "string"}
+    }
+}
+
+venda_schema = {
+    "required": ["data", "itens", "desconto", "valor_total"],
+    "properties": {
+        "data" : {"type" : "string"},
+        "itens" : {"type" :
+                [
+                    {"id_produto" : {"type" : "integer"}},
+                    {"quantidade"  : {"type" : "integer"}}
+                ]
+        },
+        "desconto" :  {"type" : "string"},
+        "valor_total" : {"type" : "string"}
+    }
+}
+
+agendamento_schema = {
+    "required": ["id_cliente", "data", "valor"],
+    "properties": {
+        "id_cliente" : {"type" : "integer"},
+        "data" : {"type" : "string"},
+        "valor" : {"type" : "numeric"}
+    }
+}
+
+consulta_schema = {
+    "required": ["id_cliente", "id_medico", "data"],
+    "properties": {
+        "id_cliente" : {"type" : "integer"},
+        "id_medico" : {"type" : "integer"},
+        "data" : {"type" : "string"}
+    }
+}
+
+longe_schema = {
+    "required": ["olho_direito_esferico", "olho_direito_cilindrico",
+    "olho_direito_eixo", "olho_direito_dp", "olho_esquerdo_esferico",
+    "olho_esquerdo_cilindrico", "olho_esquerdo_eixo", "olho_esquerdo_dp"],
+    "properties": {
+        "olho_direito_esferico" : {"type" : "string"},
+        "olho_direito_cilindrico" : {"type" : "string"},
+        "olho_direito_eixo" : {"type" : "string"},
+        "olho_direito_dp" : {"type" : "string"},
+        "olho_esquerdo_esferico" : {"type" : "string"},
+        "olho_esquerdo_cilindrico" : {"type" : "string"},
+        "olho_esquerdo_eixo" : {"type" : "string"},
+        "olho_esquerdo_dp" : {"type" : "string"}
+    }
+}
+
+perto_schema = {
+    "required": ["olho_direito_esferico", "olho_direito_cilindrico",
+    "olho_direito_eixo", "olho_direito_dp", "olho_esquerdo_esferico",
+    "olho_esquerdo_cilindrico", "olho_esquerdo_eixo", "olho_esquerdo_dp"],
+    "properties": {
+        "olho_direito_esferico" : {"type" : "string"},
+        "olho_direito_cilindrico" : {"type" : "string"},
+        "olho_direito_eixo" : {"type" : "string"},
+        "olho_direito_dp" : {"type" : "string"},
+        "olho_esquerdo_esferico" : {"type" : "string"},
+        "olho_esquerdo_cilindrico" : {"type" : "string"},
+        "olho_esquerdo_eixo" : {"type" : "string"},
+        "olho_esquerdo_dp" : {"type" : "string"}
+    }
+}
+
+prescricao_schema = {
+    "required": ["id_cliente", "lente", "longe", "perto", "observacao", "id_medico", "data"],
+    "properties": {
+        "id_cliente" : {"type" : "integer"},
+        "lente" : {"type" : "string"},
+        "id_longe" : {"type" : "integer"},
+        "id_perto" : {"type" : "integer"},
+        "observacao" : {"type" : "string"},
+        "id_medico" : {"type" : "integer"},
+        "data" : {"type" : "string"}
     }
 }
 
@@ -184,67 +262,36 @@ def setMedico():
     logger.info("Médico cadastrado com sucesso.")
     return jsonify(medico)
 
-# cadastrar lente
-@app.route("/lente", methods = ["POST"])
-@schema.validate(lente_schema)
-def setLente():
-    logger.info("Cadastrando lente.")
+# cadastrar produto
+@app.route("/produto", methods = ["POST"])
+@schema.validate(produto_schema)
+def setProduto():
+    logger.info("Cadastrando produto.")
     try:
         conn = sqlite3.connect(DATABASE_NAME)
         cursor = conn.cursor()
-        lente = request.get_json()
-        nome = lente["nome"]
-        material = lente["material"]
-        valor = lente["valor"]
-        tamanho = lente["tamanho"]
-        tipo = lente["tipo"]
+        produto = request.get_json()
+        nome = produto["nome"]
+        material = produto["material"]
+        valor = produto["valor"]
+        tamanho = produto["tamanho"]
+        tipo = produto["tipo"]
 
         cursor.execute("""
-            insert into tb_lente(nome, material, valor, tamanho, tipo)
+            insert into tb_produto(nome, material, valor, tamanho, tipo)
             values(?, ?, ?, ?, ?);
         """, (nome, material, valor, tamanho, tipo))
         conn.commit()
         id = cursor.lastrowid
-        lente["id"] = id
+        produto["id"] = id
     except(sqlite3.Error, Exception) as e:
         logger.error("Aconteceu um erro.")
         logger.error("Exceção: %s" % e)
     finally:
         if conn:
             conn.close()
-    logger.info("Lente cadastrada com sucesso.")
-    return jsonify(lente)
-
-# cadastrar armação
-@app.route("/armacao", methods = ["POST"])
-@schema.validate(armacao_schema)
-def setArmacao():
-    logger.info("Cadastrando armação.")
-    try:
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
-        armacao = request.get_json()
-        nome = armacao["nome"]
-        material = armacao["material"]
-        valor = armacao["valor"]
-        tamanho = armacao["tamanho"]
-        tipo_aro = armacao["tipo_aro"]
-
-        cursor.execute("""
-            insert into tb_armacao(nome, material, valor, tamanho, tipo_aro)
-            values(?, ?, ?, ?, ?);
-        """, (nome, material, valor, tamanho, tipo_aro))
-        conn.commit()
-        id = cursor.lastrowid
-        armacao["id"] = id
-    except(sqlite3.Error, Exception) as e:
-        logger.error("Aconteceu um erro.")
-        logger.error("Exceção: %s" % e)
-    finally:
-        if conn:
-            conn.close()
-    logger.info("Armação cadastrado com sucesso.")
-    return jsonify(armacao)
+    logger.info("Produto cadastrado com sucesso.")
+    return jsonify(produto)
 
 # realizar venda
 @app.route("/venda", methods = ["POST"])
@@ -256,16 +303,32 @@ def setVenda():
         cursor = conn.cursor()
         venda = request.get_json()
         data = venda["data"]
-        id_lente = venda["id_lente"]
-        id_armacao = venda["id_armacao"]
+        desconto = venda["desconto"]
+        valor_total = venda["valor_total"]
 
         cursor.execute("""
-            insert into tb_venda(data, id_lente, id_armacao)
+            insert into tb_venda(data, desconto, valor_total)
             values(?, ?, ?);
-        """, (data, id_lente, id_armacao))
+        """, (data, desconto, valor_total))
         conn.commit()
         id = cursor.lastrowid
         venda["id"] = id
+
+        itens = venda["itens"]
+        conn = sqlite3.connect(DATABASE_NAME)
+        cursor = conn.cursor()
+        for item in itens:
+            id_venda = id
+            id_produto = item["id_produto"]
+            quantidade = item["quantidade"]
+            cursor.execute("""
+                insert into tb_item_venda(id_venda, id_produto, quantidade)
+                values(?, ?, ?);
+            """, (id_venda, id_produto, quantidade))
+
+        conn.commit()
+
+
     except(sqlite3.Error, Exception) as e:
         logger.error("Aconteceu um erro.")
         logger.error("Exceção: %s" % e)
@@ -434,3 +497,24 @@ def setPrescricao():
             conn.close()
     logger.info("Prescrição realizada com sucesso.")
     return jsonify(prescricao)
+
+# Mensagem de erro para recurso não encontrado.
+@app.errorhandler(404)
+def not_found(error=None):
+    message = {
+            'status': 404,
+            'message': 'Not Found: ' + request.url,
+    }
+    resp = jsonify(message)
+    resp.status_code = 404
+
+    return resp
+
+@app.errorhandler(JsonValidationError)
+def validation_error(e):
+    return jsonify({ 'error': e.message, 'errors': [validation_error.message for validation_error  in e.errors]})
+
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
+
+if(__name__ == '__main__'):
+    app.run(host='0.0.0.0', debug=True, use_reloader=True)

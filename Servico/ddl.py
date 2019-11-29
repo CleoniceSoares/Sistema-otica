@@ -19,7 +19,8 @@ cursor.execute("""
 	nome VARCHAR(45) NOT NULL,
     usuario VARCHAR(45) NOT NULL,
     senha VARCHAR(45) NOT NULL,
-    id_cargo INTEGER NOT NULL
+    id_cargo INTEGER NOT NULL,
+	FOREIGN KEY(id_cargo) REFERENCES tb_cargo(id_cargo)
 	);
 """)
 
@@ -43,27 +44,15 @@ cursor.execute("""
     );
 """)
 
-# tabela lente
+# tabela produto
 cursor.execute("""
-    CREATE TABLE tb_lente(
-    id_lente INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    nome VARCHAR(45) NOT NULL,
+    CREATE TABLE tb_produto(
+    id_produto INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	nome VARCHAR(45) NOT NULL,
     material VARCHAR(45) NOT NULL,
     valor NUMERIC(10,2),
     tamanho VARCHAR(45) NOT NULL,
     tipo VARCHAR(45) NOT NULL
-    );
-""")
-
-# tabela armação
-cursor.execute("""
-    CREATE TABLE tb_armacao(
-    id_armacao INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    nome VARCHAR(45) NOT NULL,
-    material VARCHAR(45) NOT NULL,
-    valor NUMERIC(10,2),
-    tamanho VARCHAR(45) NOT NULL,
-    tipo_aro VARCHAR(45) NOT NULL
     );
 """)
 
@@ -72,9 +61,20 @@ cursor.execute("""
     CREATE TABLE tb_venda(
     id_venda INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     data DATE NOT NULL,
-    id_lente INTEGER,
-    id_armacao INTEGER,
+	desconto NUMERIC(10,2) NOT NULL,
     valor_total NUMERIC(10,2)
+    );
+""")
+
+# tabela item de venda
+cursor.execute("""
+    CREATE TABLE tb_item_venda(
+    id_venda INTEGER,
+	id_produto INTEGER,
+    quantidade INTEGER NOT NULL,
+	PRIMARY KEY(id_venda, id_produto),
+	FOREIGN KEY(id_venda) REFERENCES tb_venda(id_venda),
+	FOREIGN KEY(id_produto) REFERENCES tb_produto(id_produto)
     );
 """)
 
@@ -84,7 +84,8 @@ cursor.execute("""
     id_agendamento INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     id_cliente INTEGER NOT NULL,
     data DATE NOT NULL,
-    valor NUMERIC(10,2)
+    valor NUMERIC(10,2),
+	FOREIGN KEY(id_cliente) REFERENCES tb_cliente(id_cliente)
     );
 """)
 
@@ -94,7 +95,9 @@ cursor.execute("""
     id_consulta INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     id_cliente INTEGER NOT NULL,
     id_medico INTEGER NOT NULL,
-    data DATE NOT NULL
+    data DATE NOT NULL,
+	FOREIGN KEY(id_cliente) REFERENCES tb_cliente(id_cliente),
+	FOREIGN KEY(id_medico) REFERENCES tb_medico(id_medico)
     );
 """)
 
@@ -132,12 +135,17 @@ cursor.execute("""
 cursor.execute("""
     CREATE TABLE tb_prescricao(
     id_prescricao INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    id_cliente VARCHAR(45) NOT NULL,
+    id_cliente INTEGER NOT NULL,
     lente VARCHAR(45) NOT NULL,
-    id_longe NUMERIC NOT NULL,
-    id_perto NUMERIC NOT NULL,
+    id_longe INTEGER NOT NULL,
+    id_perto INTEGER NOT NULL,
     observacao VARCHAR(150) NOT NULL,
-    id_medico INTEGER NOT NULL
+    id_medico INTEGER NOT NULL,
+	data DATE NOT NULL,
+	FOREIGN KEY(id_cliente) REFERENCES tb_cliente(id_cliente),
+	FOREIGN KEY(id_longe) REFERENCES tb_longe(id_longe),
+	FOREIGN KEY(id_perto) REFERENCES tb_perto(id_perto),
+	FOREIGN KEY(id_medico) REFERENCES tb_medico(id_medico)
     );
 """)
 
